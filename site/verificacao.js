@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const numero = "+55" + rawPhone.replace(/\D/g, "");
 
       try {
-        const res = await fetch("https://n8n-n8n.mkiyhs.easypanel.host/webhook/por-codigo", {
+        const res = await fetch("https://main-n8n.vruch7.easypanel.host/webhook/por-codigo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ numero, code })
