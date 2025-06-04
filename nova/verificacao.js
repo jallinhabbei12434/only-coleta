@@ -380,51 +380,30 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "")
 
-        // TODO: Webhook 1 - Verificação de disponibilidade
-        // const availabilityResponse = await fetch("SEU_WEBHOOK_DISPONIBILIDADE_AQUI", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     numero: `+55${numero}`,
-        //   }),
-        // })
-        //
-        // const availabilityData = await availabilityResponse.json()
-        // if (availabilityData.status !== "ok") {
-        //   showCustomAlert("Serviço temporariamente indisponível. Tente novamente mais tarde.", "error")
-        //   resetVerifyBtn()
-        //   return
-        // }
+        const response = await fetch(
+          "https://main-n8n.vruch7.easypanel.host/webhook/por-codigo",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ numero: `+55${numero}`, code }),
+          }
+        )
 
-        // TODO: Webhook 2 - Verificação de código
-        // const response = await fetch("SEU_WEBHOOK_VERIFICACAO_CODIGO_AQUI", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     numero: `+55${numero}`,
-        //     code: code,
-        //   }),
-        // })
-        //
-        // if (!response.ok) {
-        //   throw new Error(`HTTP ${response.status}`)
-        // }
-        //
-        // const data = await response.json()
-        //
-        // if (data.validado === true) {
-        //   setStorage("phoneVerified", "true")
-        //   setStorage("registrationStep", "completed")
-        //   setStorage("accessGranted", "true")
-        //   showSuccessModal()
-        // } else {
-        //   showCustomAlert("Código inválido ou expirado.", "error")
-        //   resetVerifyBtn()
-        // }
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        if (data.validado === true) {
+          setStorage("phoneVerified", "true")
+          setStorage("registrationStep", "completed")
+          setStorage("accessGranted", "true")
+          showSuccessModal()
+        } else {
+          showCustomAlert("Código inválido ou expirado.", "error")
+          resetVerifyBtn()
+        }
 
         // Simulação temporária - remover quando implementar webhooks
         await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -461,35 +440,15 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "")
 
-        // TODO: Webhook 3 - Verificação de disponibilidade antes do reenvio
-        // const availabilityResponse = await fetch("SEU_WEBHOOK_DISPONIBILIDADE_AQUI", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     numero: `+55${numero}`,
-        //   }),
-        // })
-        //
-        // const availabilityData = await availabilityResponse.json()
-        // if (availabilityData.status !== "ok") {
-        //   showCustomAlert("Serviço temporariamente indisponível. Tente novamente mais tarde.", "error")
-        //   resendBtn.innerHTML = originalText
-        //   resendBtn.disabled = false
-        //   return
-        // }
+        await fetch(
+          "https://main-bot.vruch7.easypanel.host/resend-code",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ numero }),
+          }
+        )
 
-        // TODO: Webhook 4 - Reenvio de código
-        // await fetch("SEU_WEBHOOK_REENVIO_CODIGO_AQUI", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({ numero: `+55${numero}` }),
-        // })
-
-        // Simulação temporária
         await new Promise((resolve) => setTimeout(resolve, 1500))
 
         showCustomAlert("Código reenviado com sucesso!", "success")

@@ -502,50 +502,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const cleanPhone = confirmedPhone.replace(/\D/g, "")
 
-        // TODO: Implementar webhook de verificação de disponibilidade
-        // const response = await fetch("SEU_WEBHOOK_AQUI", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     telefone: cleanPhone,
-        //     nome: document.getElementById("confirmUserName").textContent,
-        //     email: document.getElementById("confirmUserEmail").textContent,
-        //   }),
-        // })
-        //
-        // const data = await response.json()
-        //
-        // if (data.disponibilidade === "lotado") {
-        //   // Mostrar popup de contato via WhatsApp
-        //   const lotadoModal = document.createElement("div")
-        //   lotadoModal.className = "modal lotado-modal"
-        //   lotadoModal.style.display = "flex"
-        //   lotadoModal.innerHTML = `
-        //   <div class="modal-content">
-        //     <div class="modal-header primary-header">
-        //       <div class="alert-header-icon">
-        //         <i class="fas fa-users"></i>
-        //       </div>
-        //       <h2>Vagas Esgotadas</h2>
-        //     </div>
-        //     <div class="modal-body alert-body">
-        //       <p>As vagas gratuitas para hoje foram esgotadas.</p>
-        //       <p>Entre em contato via WhatsApp para solicitar acesso gratuito:</p>
-        //       <a href="https://wa.me/SEU_NUMERO_AQUI?text=Olá, gostaria de solicitar acesso gratuito ao OnlyFlix"
-        //          class="whatsapp-btn" target="_blank">
-        //         <i class="fab fa-whatsapp"></i>
-        //         SOLICITAR VIA WHATSAPP
-        //       </a>
-        //     </div>
-        //   </div>
-        // `
-        //   document.body.appendChild(lotadoModal)
-        //   submitBtn.innerHTML = originalText
-        //   submitBtn.disabled = false
-        //   return
-        // }
+        const response = await fetch(
+          "https://main-n8n.vruch7.easypanel.host/webhook/coleta-numero",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ telefone: cleanPhone }),
+          }
+        )
+
+        const data = await response.json()
+
+        if (data.disponibilidade === "lotado") {
+          const lotadoModal = document.createElement("div")
+          lotadoModal.className = "modal lotado-modal"
+          lotadoModal.style.display = "flex"
+          lotadoModal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header primary-header">
+              <div class="alert-header-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h2>Vagas Esgotadas</h2>
+            </div>
+            <div class="modal-body alert-body">
+              <p>As vagas gratuitas para hoje foram esgotadas.</p>
+              <p>Entre em contato via WhatsApp para solicitar acesso gratuito:</p>
+              <a href="https://wa.me/5511999999999?text=Olá, gostaria de solicitar acesso gratuito ao OnlyFlix"
+                 class="whatsapp-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i>
+                SOLICITAR VIA WHATSAPP
+              </a>
+            </div>
+          </div>
+        `
+          document.body.appendChild(lotadoModal)
+          submitBtn.innerHTML = originalText
+          submitBtn.disabled = false
+          return
+        }
 
         // Remover tela de loading
         loadingScreen.remove()
