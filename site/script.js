@@ -387,7 +387,7 @@ function mostrarPopupEspera() {
   submitBtn.disabled = true;
 
   try {
-    const res = await fetch("https://main-n8n.vruch7.easypanel.host/webhook/coletar-numero", {
+    const res = await fetch("https://main-n8n.vruch7.easypanel.host/webhook/coleta-numero", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telefone: confirmedPhone }),
