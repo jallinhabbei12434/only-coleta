@@ -125,8 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function validatePhone(phone) {
-    const cleanPhone = phone.replace(/\D/g, "")
-    return cleanPhone.length >= 11 && cleanPhone.length <= 11
+    const clean = phone.replace(/\D/g, "")
+    return clean.length === 11 && clean.charAt(2) === "9"
   }
 
   // Verificar se é admin
