@@ -381,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "")
 
         const response = await fetch(
-          "https://main-n8n.vruch7.easypanel.host/webhook/por-codigo",
+          "https://main-n8n.ohbhf7.easypanel.host/webhook/por-codigo",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
