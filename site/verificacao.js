@@ -408,28 +408,14 @@ document.addEventListener("DOMContentLoaded", () => {
           setStorage("phoneVerified", "true")
           setStorage("registrationStep", "completed")
           setStorage("accessGranted", "true")
-          showSuccessModal()
+          showCustomAlert("Código inválido ou expirado.", "error")
+          resetVerifyBtn()
         } else {
           showCustomAlert("Código inválido ou expirado.", "error")
           resetVerifyBtn()
         }
 
-        // Simulação temporária - remover quando implementar webhooks
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        // Por enquanto, aceitar qualquer código válido de 6 dígitos
-        setStorage("phoneVerified", "true")
-        setStorage("registrationStep", "completed")
-        setStorage("accessGranted", "true")
-        showSuccessModal()
-      } catch (error) {
-        console.error("Erro na verificação:", error)
-        showCustomAlert("Erro de conexão. Tente novamente.", "error")
-        resetVerifyBtn()
-      }
-    })
-  }
-
+        
   function resetVerifyBtn() {
     if (verifyBtn) {
       verifyBtn.disabled = false
