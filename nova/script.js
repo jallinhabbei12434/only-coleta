@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="modal-body alert-body">
               <p>As vagas gratuitas para hoje foram esgotadas.</p>
               <p>Entre em contato via WhatsApp para solicitar acesso gratuito:</p>
-              <a href="https://wa.me/5511999999999?text=Olá, gostaria de solicitar acesso gratuito ao OnlyFlix"
+              <a href="https://wa.me/5548996462800?text=Olá, gostaria de solicitar acesso gratuito ao OnlyFlix"
                  class="whatsapp-btn" target="_blank">
                 <i class="fab fa-whatsapp"></i>
                 SOLICITAR VIA WHATSAPP
