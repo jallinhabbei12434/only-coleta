@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `
     document.body.appendChild(waitModal)
 
-    let segundos = 15
+    let segundos = 3
     const countdown = document.getElementById("waitCountdown")
 
     const timer = setInterval(() => {
@@ -514,6 +514,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await response.json()
 
         if (data.disponibilidade === "lotado") {
+          // Encerrar tela de carregamento antes de exibir o aviso
+          if (loadingScreen.parentNode) {
+            loadingScreen.remove()
+          }
+
           const lotadoModal = document.createElement("div")
           lotadoModal.className = "modal lotado-modal"
           lotadoModal.style.display = "flex"
