@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <h2>Aguarde um momento...</h2>
           <p>Estamos preparando sua verificação.</p>
-          <p>Redirecionando em <span id="waitCountdown">15</span> segundos.</p>
+          <p>Redirecionando em <span id="waitCountdown">3</span> segundos.</p>
           <div class="loading-spinner">
             <div class="spinner"></div>
           </div>
