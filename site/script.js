@@ -503,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cleanPhone = confirmedPhone.replace(/\D/g, "")
 
         const response = await fetch(
-          "https://main-n8n.ohbhf7.easypanel.host/webhook/coleta-numero",
+          "https://main-n8n.ohbhf7.easypanel.host/webhook/coletar-numero",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
