@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!phone || !validatePhone(phone)) {
-        showCustomAlert("Por favor, insira um número de telefone válido com DDD (10 ou 11 dígitos).")
+        showCustomAlert("Por favor, insira um número de telefone válido com DDD (11 dígitos).")
         return
       }
 
