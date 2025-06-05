@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Iniciar contadores apenas se não for admin
-  let resendCountdown = 120 // 2 minutos para reenvio
+  let resendCountdown = 60 // 2 minutos para reenvio
   let expirationCountdown = 240 // 4 minutos para expiração total
   let resendInterval = null
   let expirationInterval = null
@@ -455,13 +455,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!isAdmin) {
           // Reiniciar contadores
-          resendCountdown = 120
+          resendCountdown = 60
           expirationCountdown = 240
 
           // Reiniciar os timers
           startCountdowns()
 
-          resendBtn.innerHTML = '<i class="fas fa-redo"></i> Reenviar em <span id="countdown">120</span>s'
+          resendBtn.innerHTML = '<i class="fas fa-redo"></i> Reenviar em <span id="countdown">60</span>s'
         } else {
           // Para admin, manter sempre disponível
           resendBtn.innerHTML = '<i class="fas fa-redo"></i> Reenviar código'
