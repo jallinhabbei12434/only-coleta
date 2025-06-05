@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "")
 
         await fetch(
-          "https://main-n8n.ohbhf7.easypanel.host/resend-code",
+          "https://main-bot.ohbhf7.easypanel.host/resend-code",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
