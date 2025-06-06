@@ -408,14 +408,19 @@ document.addEventListener("DOMContentLoaded", () => {
           setStorage("phoneVerified", "true")
           setStorage("registrationStep", "completed")
           setStorage("accessGranted", "true")
-          showCustomAlert("Código inválido ou expirado.", "error")
-          resetVerifyBtn()
+          showSuccessModal()
         } else {
           showCustomAlert("Código inválido ou expirado.", "error")
           resetVerifyBtn()
         }
+      } catch (error) {
+        console.error("Erro na verificação:", error)
+        showCustomAlert("Erro de conexão. Tente novamente.", "error")
+        resetVerifyBtn()
+      }
+    })
+  }
 
-        
   function resetVerifyBtn() {
     if (verifyBtn) {
       verifyBtn.disabled = false
