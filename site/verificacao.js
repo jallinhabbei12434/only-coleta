@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Iniciar contadores apenas se não for admin
   let resendCountdown = 60 // 2 minutos para reenvio
-  let expirationCountdown = 240 // 4 minutos para expiração total
+  let expirationCountdown = 180 // 4 minutos para expiração total
   let resendInterval = null
   let expirationInterval = null
 
@@ -346,87 +346,127 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 500)
 
   // Verificar código
-  if (verificationForm) {
-    verificationForm.addEventListener("submit", async (e) => {
-      e.preventDefault()
+ if (verificationForm) {
+  verificationForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      const code = verificationCodeInput ? verificationCodeInput.value.trim() : ""
+    const code = verificationCodeInput ? verificationCodeInput.value.trim() : "";
 
-      // Para admin, aceitar qualquer código de 6 dígitos
-      if (isAdmin) {
-        if (code.length === 6 && /^\d+$/.test(code)) {
-          setStorage("phoneVerified", "true")
-          setStorage("registrationStep", "completed")
-          setStorage("accessGranted", "true")
-          showSuccessModal()
-          return
-        } else {
-          showCustomAlert("Digite um código de 6 dígitos (qualquer código para admin).", "info")
-          return
-        }
+    // Admin bypass
+    if (isAdmin) {
+      if (code.length === 6 && /^\d+$/.test(code)) {
+        setStorage("phoneVerified", "true");
+        setStorage("registrationStep", "completed");
+        setStorage("accessGranted", "true");
+        showSuccessModal();
+        return;
+      } else {
+        showCustomAlert("Digite um código de 6 dígitos (qualquer código para admin).", "info");
+        return;
       }
-
-      if (code.length !== 6 || !/^\d+$/.test(code)) {
-        showCustomAlert("Por favor, digite o código completo de 6 dígitos.", "error")
-        return
-      }
-
-      console.log("Verificando código:", code)
-
-      const originalText = verifyBtn.innerHTML
-      verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'
-      verifyBtn.disabled = true
-
-      try {
-        const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "")
-
-        const response = await fetch(
-          "https://main-n8n.ohbhf7.easypanel.host/webhook/por-codigo",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ numero: `+55${numero}`, code }),
-          }
-        )
-
-        const raw = await response.text()
-        let data = null
-        try {
-          data = JSON.parse(raw)
-        } catch (err) {
-          console.error("Resposta inválida:", raw)
-          showCustomAlert("Erro de conexão. Tente novamente.", "error")
-          resetVerifyBtn()
-          return
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`)
-        }
-
-        if (data.validado === true) {
-          setStorage("phoneVerified", "true")
-          setStorage("registrationStep", "completed")
-          setStorage("accessGranted", "true")
-          showSuccessModal()
-        } else {
-          showCustomAlert("Código inválido ou expirado.", "error")
-          resetVerifyBtn()
-        }
-      } catch (error) {
-        console.error("Erro na verificação:", error)
-        showCustomAlert("Erro de conexão. Tente novamente.", "error")
-        resetVerifyBtn()
-      }
-    })
-  }
-
-  function resetVerifyBtn() {
-    if (verifyBtn) {
-      verifyBtn.disabled = false
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> VERIFICAR CÓDIGO'
     }
+
+    if (code.length !== 6 || !/^\d+$/.test(code)) {
+      showCustomAlert("Por favor, digite o código completo de 6 dígitos.", "error");
+      return;
+    }
+
+    const originalText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+    verifyBtn.disabled = true;
+
+    // Verificar código repetido
+    let triedCodes = JSON.parse(sessionStorage.getItem('triedCodes') || '[]');
+    const lastSubmittedCode = sessionStorage.getItem('lastVerificationCode');
+
+    if (lastSubmittedCode && lastSubmittedCode === code) {
+      console.warn("Usuário tentou reenviar o mesmo código.");
+      showCustomAlert("Este código é antigo e inválido. Por favor, solicite um novo.", "error");
+      resetVerifyBtn();
+      return;
+    }
+
+    if (triedCodes.includes(code)) {
+      showCustomAlert("Este código já foi usado. Por favor, solicite um novo.", "error");
+      resetVerifyBtn();
+      return;
+    }
+
+    try {
+      const numero = numeroConfirmado || userData.phone?.replace(/\D/g, "");
+      const instanceId = sessionStorage.getItem('instanceId');
+      const token = sessionStorage.getItem('instanceToken');
+
+      const response = await fetch(
+        "https://main-n8n.ohbhf7.easypanel.host/webhook/por-codigo",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numero: `+55${numero}`,
+            codigo: code,
+            instanceId: instanceId,
+            token: token
+          }),
+        }
+      );
+
+      const raw = await response.text();
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch (err) {
+        console.error("Resposta inválida:", raw);
+        showCustomAlert("Erro de conexão. Tente novamente.", "error");
+        resetVerifyBtn();
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      sessionStorage.setItem('lastVerificationCode', code);
+
+      if (data.validado === true) {
+        setStorage("phoneVerified", "true");
+        setStorage("registrationStep", "completed");
+        setStorage("accessGranted", "true");
+        showSuccessModal();
+        return;
+      }
+
+      // Se deu código inválido → salvar tentativa
+      if (!triedCodes.includes(code)) {
+        triedCodes.push(code);
+        sessionStorage.setItem('triedCodes', JSON.stringify(triedCodes));
+      }
+
+      if (triedCodes.length > 2) {
+        console.warn("2 códigos diferentes errados... Redirecionando para Plano B.");
+        window.location.href = "link-plano-b.html";
+        return;
+      }
+
+      showCustomAlert("Código incorreto ou expirado.", "error");
+      resetVerifyBtn();
+
+    } catch (error) {
+      console.error("Erro na verificação:", error);
+      showCustomAlert("Erro de conexão. Tente novamente.", "error");
+      resetVerifyBtn();
+    }
+  });
+}
+
+
+function resetVerifyBtn() {
+  if (verifyBtn) {
+    verifyBtn.disabled = false;
+    verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> VERIFICAR CÓDIGO';
   }
+}
+
 
   // Reenviar código
   if (resendBtn) {
@@ -443,9 +483,9 @@ document.addEventListener("DOMContentLoaded", () => {
         await fetch(
           "https://main-n8n.ohbhf7.easypanel.host/webhook/resend-code",
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ numero }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ numero, instanceId, token }),
           }
         )
 
@@ -456,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isAdmin) {
           // Reiniciar contadores
           resendCountdown = 60
-          expirationCountdown = 240
+          expirationCountdown = 180
 
           // Reiniciar os timers
           startCountdowns()
@@ -554,4 +594,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // Debug
   console.log("Página de verificação carregada com dados:", userData)
   console.log("É admin:", isAdmin)
-})
+  })
