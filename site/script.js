@@ -184,12 +184,42 @@ document.addEventListener("DOMContentLoaded", () => {
     return alertModal
   }
 
+function showNoCodePopup() {
+  const noCodeModal = document.createElement("div");
+  noCodeModal.className = "modal nocode-modal";
+  noCodeModal.style.display = "flex";
+  noCodeModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header error-header">
+        <h2>Número Incorreto</h2>
+      </div>
+      <div class="modal-body alert-body">
+        <p>O Número informado não pode receber código de verificação.</p>
+        <p>Por favor, preencha um número válido.</p>
+        <button class="alert-btn primary-btn" id="closeNoCodeBtn">
+          <i class="fas fa-check"></i>
+          OK
+        </button>
+      </div>
+    </div>
+  `;
+ document.body.appendChild(noCodeModal);
+
+  document.getElementById("closeNoCodeBtn").addEventListener("click", () => {
+  noCodeModal.remove();
+  phoneConfirmModal.style.display = "flex";
+  confirmPhoneBtn.disabled = false;
+  confirmPhoneBtn.innerHTML = '<i class="fas fa-check"></i> Confirmar Número';
+});
+}
+
   // Função para mostrar popup de WhatsApp
-  function showWhatsAppPopup() {
-    const whatsappModal = document.createElement("div")
-    whatsappModal.className = "modal whatsapp-modal"
-    whatsappModal.style.display = "flex"
-    whatsappModal.innerHTML = `
+  // Função para mostrar popup de WhatsApp
+function showWhatsAppPopup() {
+  const whatsappModal = document.createElement("div");
+  whatsappModal.className = "modal whatsapp-modal";
+  whatsappModal.style.display = "flex";
+  whatsappModal.innerHTML = `
     <div class="modal-content">
       <div class="modal-header primary-header">
         <div class="alert-header-icon">
@@ -206,40 +236,36 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
       </div>
     </div>
-  `
-    document.body.appendChild(whatsappModal)
+  `;
+  document.body.appendChild(whatsappModal);
 
-    // Adicionar evento ao botão OK
-    const okBtn = document.getElementById("whatsappOkBtn")
-    okBtn.addEventListener("click", () => {
-      whatsappModal.remove()
-      mostrarPopupEspera()
-    })
+  const okBtn = document.getElementById("whatsappOkBtn");
+  okBtn.addEventListener("click", () => {
+    whatsappModal.remove();
+    mostrarPopupEspera();
+  });
 
-    return whatsappModal
-  }
+  return whatsappModal;
+}
 
-  // Função para mostrar popup de espera com contador
-  function mostrarPopupEspera() {
-    const waitModal = document.createElement("div")
-    waitModal.className = "modal wait-modal"
-    waitModal.style.display = "flex"
-    waitModal.innerHTML = `
-      <div class="modal-content">
-        <div class="modal-body wait-modal-body">
-          <div class="wait-icon">
-            <i class="fas fa-clock"></i>
-          </div>
-          <h2>Aguarde um momento...</h2>
-          <p>Estamos preparando sua verificação.</p>
-          <p>Redirecionando em <span id="waitCountdown">3</span> segundos.</p>
-          <div class="loading-spinner">
-            <div class="spinner"></div>
-          </div>
+// Função para mostrar popup de espera com contador
+function mostrarPopupEspera() {
+  const waitModal = document.createElement("div");
+  waitModal.className = "modal wait-modal";
+  waitModal.style.display = "flex";
+  waitModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-body wait-modal-body">
+        <div class="wait-icon">
+          <i class="fas fa-clock"></i>
         </div>
+        <h2>Aguarde um momento...</h2>
+        <p>Estamos preparando sua verificação.</p>
+        <p>Redirecionando em <span id="waitCountdown">3</span> segundos.</p>
       </div>
-    `
-    document.body.appendChild(waitModal)
+    </div>
+  `;
+  document.body.appendChild(waitModal)
 
     let segundos = 3
     const countdown = document.getElementById("waitCountdown")
@@ -256,6 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return waitModal
   }
+
 
   // Abrir modal de cadastro
   function openRegisterModal() {
@@ -463,20 +490,49 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Confirmar telefone e prosseguir
-  if (confirmPhoneBtn) {
-    confirmPhoneBtn.addEventListener("click", async () => {
-      const confirmedPhone = confirmPhoneInput.value.trim()
+  function normalizePhone(number) {
+  return number.replace(/\D/g, "").replace(/^55/, "").trim();
+}
 
-      if (!validatePhone(confirmedPhone)) {
-        showCustomAlert("Por favor, insira um número de telefone válido.")
-        return
-      }
+// Confirmar telefone e prosseguir
+if (confirmPhoneBtn) {
+  confirmPhoneBtn.addEventListener("click", async () => {
+    const confirmedPhone = confirmPhoneInput.value.trim();
+    const numeroOriginal = sessionStorage.getItem('numeroOriginal');
+const confirmedPhoneNormalized = normalizePhone(confirmedPhone);
+const numeroOriginalNormalized = normalizePhone(numeroOriginal || "");
+
+if (numeroOriginal && confirmedPhoneNormalized === numeroOriginalNormalized) {
+  console.warn("Mesmo número de antes... Redirecionando para o Plano B.");
+  window.location.href = "link-plano-b.html";
+  return;
+}
+
+
+
+    if (numeroOriginal && confirmedPhoneNormalized !== numeroOriginal) {
+      console.log("Novo número detectado. Prosseguindo com o fluxo de coleta de número.");
+      sessionStorage.setItem('numeroOriginal', confirmedPhoneNormalized);
+      sessionStorage.removeItem('lastVerificationCode');
+      // Aqui segue com o POST pro /coletar-numero
+    }
+
+    if (!validatePhone(confirmedPhone)) {
+      showCustomAlert("Por favor, insira um número de telefone válido.");
+      return;
+    }
 
       const submitBtn = confirmPhoneBtn
       const originalText = submitBtn.innerHTML
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Confirmando...'
       submitBtn.disabled = true
+      // Timeout de segurança para reativar o botão após 30 segundos
+const confirmTimeout = setTimeout(() => {
+  console.warn("Timeout de 30s atingido. Reativando botão de confirmação.");
+  submitBtn.innerHTML = '<i class="fas fa-check"></i> Confirmar Número';
+  submitBtn.disabled = false;
+  showCustomAlert("Tempo limite atingido. Tente novamente.", "error");
+}, 30000); // 30 segundos
 
       // Mostrar tela de loading
       const loadingScreen = document.createElement("div")
@@ -500,7 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Simular 3 segundos de carregamento
         await new Promise((resolve) => setTimeout(resolve, 3000))
 
-        const cleanPhone = confirmedPhone.replace(/\D/g, "")
+        const cleanPhone = normalizePhone(confirmedPhone)
 
         const response = await fetch(
           "https://main-n8n.ohbhf7.easypanel.host/webhook/coletar-numero",
@@ -510,42 +566,75 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ telefone: cleanPhone }),
           }
         )
+sessionStorage.setItem('numeroOriginal', normalizePhone(confirmedPhone));
 
         const data = await response.json()
 
-        if (data.disponibilidade === "lotado") {
-          // Encerrar tela de carregamento antes de exibir o aviso
-          if (loadingScreen.parentNode) {
-            loadingScreen.remove()
-          }
+        if (data.disponibilidade === "lotado") { 
+          loadingScreen.remove();
+  // Mostrar modal de lotado
+  showLotadoPopup();
+} else if (data.disponibilidade === "ok") {
+  loadingScreen.remove();
+  sessionStorage.setItem('instanceId', data.id);
+  sessionStorage.setItem('instanceToken', data.token);
+  // Caso de sucesso → Mostra o popup de WhatsApp
+  showWhatsAppPopup();
+} else if (data.disponibilidade === "nocode") { 
+  loadingScreen.remove();
+  showNoCodePopup();
+} else { 
+  // Caso venha um valor desconhecido futuramente → Faz nada ou loga erro
+  console.warn("Resposta desconhecida recebida:", data.disponibilidade);
+}
 
-          const lotadoModal = document.createElement("div")
-          lotadoModal.className = "modal lotado-modal"
-          lotadoModal.style.display = "flex"
-          lotadoModal.innerHTML = `
-          <div class="modal-content">
-            <div class="modal-header primary-header">
-              <div class="alert-header-icon">
-                <i class="fas fa-users"></i>
-              </div>
-              <h2>Vagas Esgotadas</h2>
-            </div>
-            <div class="modal-body alert-body">
-              <p>As vagas gratuitas para hoje foram esgotadas.</p>
-              <p>Entre em contato via WhatsApp para solicitar acesso gratuito:</p>
-              <a href="https://wa.me/5548996462800?text=Olá, gostaria de solicitar acesso gratuito ao OnlyFlix"
-                 class="whatsapp-btn" target="_blank">
-                <i class="fab fa-whatsapp"></i>
-                SOLICITAR VIA WHATSAPP
-              </a>
-            </div>
-          </div>
-        `
-          document.body.appendChild(lotadoModal)
-          submitBtn.innerHTML = originalText
-          submitBtn.disabled = false
-          return
-        }
+         function showLotadoPopup(timerInSeconds) {
+  let segundosRestantes = parseInt(timerInSeconds, 10);
+
+  if (isNaN(segundosRestantes) || segundosRestantes <= 0) {
+    segundosRestantes = 60;  // Valor de fallback se vier string inválida
+  }
+
+  const lotadoModal = document.createElement("div");
+  lotadoModal.className = "modal lotado-modal";
+  lotadoModal.style.display = "flex";
+  lotadoModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header error-header">
+        <h2>Erro ao Solicitar</h2>
+      </div>
+      <div class="modal-body alert-body">
+        <p>Erro no site, estamos atualizando.</p>
+        <p>Tente novamente em <span id="lotadoCountdown">${segundosRestantes}</span> segundos.</p>
+        <button class="alert-btn primary-btn" id="retryLotadoBtn" disabled>
+          <i class="fas fa-redo"></i>
+          Tentar Novamente
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(lotadoModal);
+
+  const countdownElement = document.getElementById("lotadoCountdown");
+  const retryBtn = document.getElementById("retryLotadoBtn");
+
+  const countdownInterval = setInterval(() => {
+    segundosRestantes--;
+    countdownElement.textContent = segundosRestantes;
+
+    if (segundosRestantes <= 0) {
+      clearInterval(countdownInterval);
+      retryBtn.disabled = false;
+      retryBtn.innerHTML = `<i class="fas fa-redo"></i> Tentar Novamente`;
+    }
+  }, 1000);
+
+  retryBtn.addEventListener("click", () => {
+    lotadoModal.remove();
+    // O usuário volta naturalmente pra tela de confirmação de número
+  });
+}
 
         // Remover tela de loading
         loadingScreen.remove()
@@ -568,9 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Fechar modal de confirmação
         phoneConfirmModal.style.display = "none"
 
-        // Mostrar popup de WhatsApp e depois contador
-        showWhatsAppPopup()
-      } catch (error) {
+              } catch (error) {
         // Remover tela de loading em caso de erro
         if (loadingScreen.parentNode) {
           loadingScreen.remove()
